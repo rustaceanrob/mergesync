@@ -1,0 +1,10 @@
+[package]
+name = "mergesync"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+kernel = { package = "bitcoinkernel", version = "0.2.0" }
+rayon = "1.12.0"
+log = "0.4"
+env_logger = "0.11"
