@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+bitcoin_hashes = "0.20.0"
+hintsfile = "0.1.1"
 kernel = { package = "bitcoinkernel", version = "0.2.0" }
 rayon = "1.12.0"
 log = "0.4"
