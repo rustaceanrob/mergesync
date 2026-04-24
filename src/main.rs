@@ -1,21 +1,28 @@
 use hintsfile::HintsfileBuilder;
+use hintsgen::{task, OutPointMap};
 use kernel::{ChainType, ChainstateManager, ContextBuilder};
-use mergesync::{OutPointMap, task};
 use std::{fs::File, path::PathBuf, sync::Arc, time::Instant};
 
-const TOTAL_MEMORY_BUDGET: usize = 30 * 1_000_000_000;
-const NETWORK: ChainType = ChainType::Mainnet;
-const STOP_HEIGHT: u32 = 930_000;
+const TOTAL_MEMORY_BUDGET: usize = 4 * 1_000_000_000;
+
+configure_me::include_config!();
 
 fn main() {
+    let (config, _) = Config::including_optional_config_files::<&[&str]>(&[]).unwrap_or_exit();
+    let network = config.network;
+    let network = match network.as_str() {
+        "bitcoin" => ChainType::Mainnet,
+        "signet" => ChainType::Signet,
+        _ => panic!("unsupported network"),
+    };
+    let bitcoin_dir = config.datadir;
     let mut builder =
         env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info"));
     builder.init();
-    let bitcoin_dir = std::env::var("BITCOIN_DIR").unwrap();
     log::info!("Using directory {bitcoin_dir}");
     let data_dir = bitcoin_dir.parse::<PathBuf>().unwrap();
     let blocks_dir = data_dir.join("blocks");
-    let context = ContextBuilder::new().chain_type(NETWORK).build().unwrap();
+    let context = ContextBuilder::new().chain_type(network).build().unwrap();
     log::info!("Initializing chainstate");
     let chainman = ChainstateManager::new(
         &context,
@@ -28,7 +35,7 @@ fn main() {
     chainman.import_blocks().unwrap();
     let active_chain = chainman.active_chain();
     let then = Instant::now();
-    let path = PathBuf::from("./signet.hints");
+    let path = PathBuf::from(config.hintsfile);
     log::info!("Allocating OutPoint vector");
     let mut curr = OutPointMap::new(TOTAL_MEMORY_BUDGET);
     for entry in active_chain.iter() {
@@ -42,12 +49,12 @@ fn main() {
             curr.size() / 1_000_000,
             curr.len() / 1_000
         );
-        if STOP_HEIGHT == entry.height() as u32 {
+        if config.stop == entry.height() as u32 {
             break;
         }
     }
     let file = File::create(path).unwrap();
-    let mut hintsfile = HintsfileBuilder::new(file).initialize(STOP_HEIGHT).unwrap();
+    let mut hintsfile = HintsfileBuilder::new(file).initialize(config.stop).unwrap();
     for (height, hints) in curr.into_vec() {
         log::info!("block {}: num hints: {}", height, hints.len());
         hintsfile

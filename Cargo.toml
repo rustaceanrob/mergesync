@@ -1,12 +1,19 @@
 [package]
-name = "mergesync"
+name = "hintsgen"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
 bitcoin_hashes = "0.20.0"
+configure_me = "0.4.0"
 hintsfile = "0.1.1"
 kernel = { package = "bitcoinkernel", version = "0.2.0" }
 rayon = "1.12.0"
 log = "0.4"
 env_logger = "0.11"
+
+[build-dependencies]
+configure_me_codegen = "0.4.0"
+
+[package.metadata.configure_me]
+spec = "config_spec.toml"

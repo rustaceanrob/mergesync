@@ -1,0 +1,23 @@
+[[param]]
+name = "network"
+type = "String"
+default = "\"bitcoin\".into()"
+doc = "Which Bitcoin network to use."
+
+[[param]]
+name = "stop"
+type = "u32"
+default = "930000"
+doc = "Target height to encode hints"
+
+[[param]]
+name = "datadir"
+type = "String"
+default = "\"/data\".into()"
+doc = "Data directory for blockchain and configuration."
+
+[[param]]
+name = "hintsfile"
+type = "String"
+default = "\"bitcoin.hints\".into()"
+doc = "Output hintsfile."
